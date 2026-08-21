@@ -130,5 +130,26 @@ def start_bot():
                     
         time.sleep(1)
 
+import os
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
+
+# ساخت یک وب‌سرور بسیار ساده برای پاسخ به Render
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Bot is active!")
+
+def run_dummy_server():
+    port = int(os.getenv("PORT", 8080))
+    server = HTTPServer(("0.0.0.0", port), HealthCheckHandler)
+    server.serve_forever()
+
+# ۵. اجرای همزمان وب‌سرور و ربات
 if __name__ == "__main__":
+    # اجرای وب‌سرور در پس‌زمینه برای تایید سلامت سرویس در Render
+    threading.Thread(target=run_dummy_server, daemon=True).start()
+    
+    # اجرای ربات
     start_bot()
